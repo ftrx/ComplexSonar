@@ -140,7 +140,7 @@ void drawGrid(PVector center, float length, int repeat)
 }
 
 
-//calculate rotationMatrix from Angle
+//calculate rotationMatrix from angle
 PMatrix returnMatrixfromAngles(float x, float y, float z)
 {
   PMatrix3D matrix = new PMatrix3D();
@@ -153,13 +153,13 @@ PMatrix returnMatrixfromAngles(float x, float y, float z)
 }
 
 
-// Returns normal Vector of the Oculus Cam
+// Returns normal vector of the cculus cam
 PVector oculusNormalVector(SimpleOculusRift oculusCam)
 {
   PVector orientation = new PVector();
   oculusRiftDev.sensorOrientation(orientation);
   PMatrix3D mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
   PVector normal = mat.mult(new PVector(0, 0, -1), null);
-  return normal
+  return normal;
 }
 
