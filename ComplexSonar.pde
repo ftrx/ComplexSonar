@@ -1,23 +1,8 @@
-/* --------------------------------------------------------------------------
- * SimpleOculusRift Basic
- * --------------------------------------------------------------------------
- * Processing Wrapper for the Oculus Rift
- * http://github.com/xohm/SimpleOculusRift
- * --------------------------------------------------------------------------
- * prog:  Max Rheiner / Interaction Design / Zhdk / http://iad.zhdk.ch/
- * date:  04/27/2014 (m/d/y)
- * ----------------------------------------------------------------------------
- * 1 unit should be 1m in the scene
- * ----------------------------------------------------------------------------
- */
-
 import SimpleOculusRift.*;
 import SimpleOpenNI.*;
 
-SimpleOpenNI  context;
-
-
-SimpleOculusRift   oculusRiftDev;
+SimpleOpenNI context;
+SimpleOculusRift oculusRiftDev;
 
 float   animRot = radians(45);
 
