@@ -12,16 +12,6 @@ PVector pRayDir = new PVector(0, 0, -1);
 
 int boxSize = 2;
 PVector boxPosition;
-PMatrix mat;
-
-PVector orientation = new PVector();
-PMatrix3D xform = new PMatrix3D();
-color col_notSelected = color(255, 0, 0);
-color col_selected = color(0, 255, 0);
-
-PVector hit1 = new PVector();
-PVector hit2 = new PVector();
-
 
 //Kinect
 int[]   depthMap;
@@ -57,32 +47,7 @@ void setup()
 }
 
 void draw()
-{
-  animRot += 0.01;
-  // calculate Ray
-  oculusRiftDev.sensorOrientation(orientation);
-
-  mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
-  pRayDir = mat.mult(new PVector(0, 0, -1), null);
-  // println(orientation);   
-  xform = new PMatrix3D();
-  xform.translate(boxPosition.x, boxPosition.y, boxPosition.z);
-  xform.rotate(animRot, 0, 1, 0);
-  if (boxIntersection(xform, 
-  pRay, 
-  pRayDir, 
-  new PVector(0, 0, 0), 
-  boxSize, 
-  boxSize, 
-  boxSize, 
-  hit1, hit2) > 0)
-  {
-    intersects = true;
-  } 
-  else {
-    intersects = false;
-  }
-
+{ 
   /*
   // get the data of head tracking sensor
    PVector orientation = new PVector();
@@ -123,7 +88,7 @@ void onDrawScene(int eye)
       if (depthMap[index] > 0)
       {
         realWorldPoint = realWorldMap[index];
-        pixelColor =  color(map(realWorldPoint.z,0,10000,255,20));
+        pixelColor =  color(map(realWorldPoint.z, 0, 10000, 255, 20));
         stroke(pixelColor);
         vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
       }
@@ -140,9 +105,6 @@ boolean sketchFullScreen()
 
 void keyPressed()
 {
-  println("reset head orientation");
-  oculusRiftDev.resetOrientation();
-
   switch(key)
   {
   case ' ':
@@ -174,16 +136,30 @@ void drawGrid(PVector center, float length, int repeat)
     pos, 0, length*.5);
   }
 
-
   popMatrix();
 }
 
+
+//calculate rotationMatrix from Angle
 PMatrix returnMatrixfromAngles(float x, float y, float z)
 {
   PMatrix3D matrix = new PMatrix3D();
+
+  // this is specifcly for the simpleOculusRift, for other uses the order of rotation may be different (x,y,z or z,y,x etc)
   matrix.rotateY(y);
   matrix.rotateX(x);
   matrix.rotateZ(z);
   return matrix;
+}
+
+
+// Returns normal Vector of the Oculus Cam
+PVector oculusNormalVector(SimpleOculusRift oculusCam)
+{
+  PVector orientation = new PVector();
+  oculusRiftDev.sensorOrientation(orientation);
+  PMatrix3D mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
+  PVector normal = mat.mult(new PVector(0, 0, -1), null);
+  return normal
 }
 
