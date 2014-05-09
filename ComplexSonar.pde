@@ -4,14 +4,7 @@ import SimpleOpenNI.*;
 SimpleOpenNI context;
 SimpleOculusRift oculusRiftDev;
 
-float   animRot = radians(45);
-
-
-float floorDist = 1.7;
-
-
-boolean   fullScreen = true;
-//boolean   fullScreen = true;
+boolean fullScreen = true; // false
 
 // Raycast
 PVector pRay = new PVector(0, 0, 0);
@@ -20,8 +13,6 @@ PVector pRayDir = new PVector(0, 0, -1);
 int boxSize = 2;
 PVector boxPosition;
 PMatrix mat;
-
-boolean intersects = false;
 
 PVector orientation = new PVector();
 PMatrix3D xform = new PMatrix3D();
@@ -42,16 +33,12 @@ void setup()
   else    
     size(1280, 800, OPENGL);
 
-  println("OPENGL_VERSION: " + PGraphicsOpenGL.OPENGL_VERSION);
-  println("GLSL_VERSION: " + PGraphicsOpenGL.GLSL_VERSION);
-
   oculusRiftDev = new SimpleOculusRift(this); 
   oculusRiftDev.setBknColor(10, 13, 2);  // just not total black, to see the barr el distortion
 
   strokeWeight(.3);
 
   boxPosition = new PVector(-3, -floorDist + 1, 0);
-
 
   // kinect
   //context = new SimpleOpenNI(this, SimpleOpenNI.RUN_MODE_MULTI_THREADED);
@@ -67,12 +54,6 @@ void setup()
 
   // enable depthMap generation 
   context.enableDepth();
-  /*
-  context.enableRGB();
-  
-  context.alternativeViewPointDepthToImage();
-  context.setDepthColorSyncEnabled(true);
-*/
 }
 
 void draw()
@@ -113,66 +94,12 @@ void draw()
 
   depthMap = context.depthMap();
 
-
-  // draw the distortion on the screen
   oculusRiftDev.draw();
 } 
 
 // SimpleOculusRift call for drawing the scene for each eye
 void onDrawScene(int eye)
 {  
-  /*
-  //shows which eye is currently rendered
-   if(eye == SimpleOculusRift.StereoEye_Left)
-   println("draw left eye");
-   else
-   println("draw right eye");
-   */
- /*
-  stroke(200, 200, 220);
-  fill(100, 100, 220);
-
-  //drawGrid(new PVector(0, -floorDist, 0), 10, 10);
-
-  // static box
-  if (!intersects)
-  {
-    fill(col_notSelected);
-  }
-  else {
-    fill(col_selected);
-  }
-  pushMatrix();
-
-  //translate(boxPosition.x, boxPosition.y, boxPosition.z);
-  applyMatrix(xform);
-
-  box(boxSize);
-  popMatrix();
-  if (intersects)
-  {
-    strokeWeight(15);
-    stroke(255, 255, 255);
-
-    point(hit1.x, hit1.y, hit1.z);
-    point(hit2.x, hit2.y, hit2.z);
-
-    println(hit1);
-    strokeWeight(1);
-  }
-  // fill(100,200,20);
-*/
-
-  /*
-  fill(0,0,255);
-   pushMatrix();
-   //applyMatrix(mat);
-   translate(pRayDir.x*5,pRayDir.y*5,pRayDir.z*5);
-   sphere(1);
-   popMatrix();
-   */
-
-
   PVector realWorldPoint;
   int     steps   = 4;  // to speed up the drawing, draw every third point
   int     index;
