@@ -6,12 +6,6 @@ SimpleOculusRift oculusRiftDev;
 
 boolean fullScreen = true; // false
 
-// Raycast
-PVector pRay = new PVector(0, 0, 0);
-PVector pRayDir = new PVector(0, 0, -1);
-
-int boxSize = 2;
-PVector boxPosition;
 
 //Kinect
 int[]   depthMap;
@@ -28,7 +22,7 @@ void setup()
 
   strokeWeight(.3);
 
-  boxPosition = new PVector(-3, -floorDist + 1, 0);
+
 
   // kinect
   //context = new SimpleOpenNI(this, SimpleOpenNI.RUN_MODE_MULTI_THREADED);
@@ -141,7 +135,7 @@ void drawGrid(PVector center, float length, int repeat)
 
 
 //calculate rotationMatrix from angle
-PMatrix returnMatrixfromAngles(float x, float y, float z)
+PMatrix3D returnMatrixfromAngles(float x, float y, float z)
 {
   PMatrix3D matrix = new PMatrix3D();
 
