@@ -51,7 +51,7 @@ void draw() {
    oculusRiftDev.sensorOrientation(orientation);
    println(orientation);   
    */
-  PMatrix3D headOrientationMatrix = oculusRiftDev.headOrientationMatrix();
+  PMatrix3D headOrientationMatrix = oculus.headOrientationMatrix();
 
   formx = new PMatrix3D();
   formx.apply(headOrientationMatrix); 
@@ -148,18 +148,6 @@ boolean sketchFullScreen() {
 
 void keyPressed() {
   switch(key) {
-    <<<<<<< HEAD
-    case ' ':
-    context.setMirror(!context.mirror());
-    break;
-  case 'q':
-    println("reset head orientation");
-    oculusRiftDev.resetOrientation();
-    break;
-  case 'w':
-    addNewImpulse(new PVector(0, 0, 0), 1.0f);
-    break;
-    =======
     case ' ':
     context.setMirror(!context.mirror());
     break;
@@ -167,7 +155,9 @@ void keyPressed() {
     println("reset head orientation");
     oculus.resetOrientation();
     break;
-    >>>>>>> master
+  case 'w':
+    addNewImpulse(new PVector(0, 0, 0), 1.0f);
+    break;
   }
 }
 
