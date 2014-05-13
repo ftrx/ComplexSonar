@@ -2,28 +2,22 @@ import SimpleOculusRift.*;
 import SimpleOpenNI.*;
 
 SimpleOpenNI context;
-SimpleOculusRift oculusRiftDev;
+SimpleOculusRift oculus;
 
-boolean fullScreen = true; // false
+boolean fullScreen = true;
 
-//Kinect
 int[] depthMap;
 float rotY = 90.0f;
 
-void setup()
-{
-  if (fullScreen) {
-    size(1280, 800, OPENGL);
-  } else {
-    size(1280, 800, OPENGL);
-  }
+void setup() {
+  size(1280, 800, OPENGL);
 
-  oculusRiftDev = new SimpleOculusRift(this,SimpleOculusRift.RenderQuality_Middle); 
-  oculusRiftDev.setBknColor(0, 0, 0);  // just not total black, to see the barr el distortion
+  oculus = new SimpleOculusRift(this, SimpleOculusRift.RenderQuality_Middle); 
+  oculus.setBknColor(0, 0, 0); 
 
   strokeWeight(.3);
 
-  context = new SimpleOpenNI(this,SimpleOpenNI.RUN_MODE_MULTI_THREADED);
+  context = new SimpleOpenNI(this, SimpleOpenNI.RUN_MODE_MULTI_THREADED);
 
   if (context.isInit() == false) {
     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
@@ -35,8 +29,7 @@ void setup()
   context.enableDepth();
 }
 
-void draw()
-{ 
+void draw() {
   /*
   // get the data of head tracking sensor
   PVector orientation = new PVector();
@@ -47,11 +40,10 @@ void draw()
   context.update();
   depthMap = context.depthMap();
 
-  oculusRiftDev.draw();
+  oculus.draw();
 } 
 
-void onDrawScene(int eye)
-{  
+void onDrawScene(int eye) {
   PVector realWorldPoint;
   int     steps = 4;
   int     index;
@@ -67,13 +59,10 @@ void onDrawScene(int eye)
   PVector[] realWorldMap = context.depthMapRealWorld();
 
   beginShape(POINTS);
-  for (int y=0;y < context.depthHeight();y+=steps)
-  {
-    for (int x=0;x < context.depthWidth();x+=steps)
-    {
+  for (int y=0; y < context.depthHeight(); y += steps) {
+    for (int x=0; x < context.depthWidth(); x += steps) {
       index = x + y * context.depthWidth();
-      if (depthMap[index] > 0)
-      {
+      if (depthMap[index] > 0) {
         realWorldPoint = realWorldMap[index];
         pixelColor =  color(map(realWorldPoint.z, 0, 10000, 255, 20));
         stroke(pixelColor);
@@ -96,7 +85,7 @@ void keyPressed() {
       break;
     case 'q':
       println("reset head orientation");
-      oculusRiftDev.resetOrientation();
+      oculus.resetOrientation();
       break;
   }
 }
@@ -109,9 +98,9 @@ PMatrix3D returnMatrixfromAngles(float x, float y, float z) {
   return matrix;
 }
 
-PVector oculusNormalVector(SimpleOculusRift oculusCam) {
+PVector oculusNormalVector() {
   PVector orientation = new PVector();
-  oculusRiftDev.sensorOrientation(orientation);
+  oculus.sensorOrientation(orientation);
   PMatrix3D mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
   PVector normal = mat.mult(new PVector(0, 0, -1), null);
   return normal;
