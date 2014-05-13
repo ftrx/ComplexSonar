@@ -1,7 +1,16 @@
 import SimpleOculusRift.*;
 import SimpleOpenNI.*;
+import ddf.minim.*;
 
+float dim;
+int coolDownTime = 2000;
+float lastWaveTime = 0.0f;
+boolean isCool = true;
+Minim minim;
+AudioInput input;
 SimpleOpenNI context;
+
+
 SimpleOculusRift oculusRiftDev;
 
 boolean fullScreen = true; // false
@@ -38,6 +47,10 @@ void setup()
 
   context.setMirror(true); 
   context.enableDepth();
+
+  // Audiotoolkit anlegen
+  minim = new Minim (this);
+  input = minim.getLineIn (Minim.STEREO, 512);
 }
 
 void draw()
@@ -58,6 +71,18 @@ void draw()
   context.update();
   depthMap = context.depthMap();
 
+  dim = input.mix.level () * 10.0f;
+  //println(dim);
+  if (dim > 1.0f && isCool) {
+    addNewImpulse(new PVector(0, 0, 0), 1.0f);
+    lastWaveTime = millis();
+    isCool = false;
+  }
+  else if (millis() - lastWaveTime >= coolDownTime)
+  {
+    isCool = true;
+  }
+
   oculusRiftDev.draw();
 } 
 
@@ -65,7 +90,7 @@ void onDrawScene(int eye)
 {  
   PVector realWorldPoint;
   PVector realWorldPointMilimeter; 
-  int     steps = 4;
+  int     steps = 8;
   int     index;
   color   pixelColor;
 
@@ -119,21 +144,20 @@ void onDrawScene(int eye)
           }
           //println(pointIntensity);
           pixelColor = color(map(pointIntensity, 0, 1.0f, 0, 255)* map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
-          
+
           if (pointIntensity <= 0.1f)
           {
-             pixelColor = color(40f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
+            pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
           }
         }
         else
         {
-          pixelColor = color(40f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
+          pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
           //vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
         }
-        
+
         stroke(pixelColor);
         vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
-       
       }
     }
   }
