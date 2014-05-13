@@ -17,12 +17,14 @@ void setup()
   } else {
     size(1280, 800, OPENGL);
   }
+
   oculusRiftDev = new SimpleOculusRift(this,SimpleOculusRift.RenderQuality_Middle); 
   oculusRiftDev.setBknColor(0, 0, 0);  // just not total black, to see the barr el distortion
 
   strokeWeight(.3);
 
   context = new SimpleOpenNI(this,SimpleOpenNI.RUN_MODE_MULTI_THREADED);
+
   if (context.isInit() == false) {
     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
     exit();
