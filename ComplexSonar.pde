@@ -9,31 +9,22 @@ boolean isCool = true;
 Minim minim;
 AudioInput input;
 SimpleOpenNI context;
+SimpleOculusRift oculus;
 
+boolean fullScreen = true;
 
-SimpleOculusRift oculusRiftDev;
-
-boolean fullScreen = true; // false
-
-//Kinect
 int[] depthMap;
 float rotY = 90.0f;
-
 
 ArrayList sonars = new ArrayList<ComplexSonarImpulse>();
 
 PMatrix3D formx = new PMatrix3D();
-void setup()
-{
-  if (fullScreen) {
-    size(1280, 800, OPENGL);
-  }
-   else {
-    size(1280, 800, OPENGL);
-  }
 
-  oculusRiftDev = new SimpleOculusRift(this, SimpleOculusRift.RenderQuality_Middle); 
-  oculusRiftDev.setBknColor(0, 0, 0);  // just not total black, to see the barr el distortion
+void setup() {
+  size(1280, 800, OPENGL);
+
+  oculus = new SimpleOculusRift(this, SimpleOculusRift.RenderQuality_Middle); 
+  oculus.setBknColor(0, 0, 0); 
 
   strokeWeight(.3);
 
@@ -53,8 +44,7 @@ void setup()
   input = minim.getLineIn (Minim.STEREO, 512);
 }
 
-void draw()
-{ 
+void draw() {
   /*
   // get the data of head tracking sensor
    PVector orientation = new PVector();
@@ -78,16 +68,14 @@ void draw()
     lastWaveTime = millis();
     isCool = false;
   }
-  else if (millis() - lastWaveTime >= coolDownTime)
-  {
+  else if (millis() - lastWaveTime >= coolDownTime) {
     isCool = true;
   }
 
-  oculusRiftDev.draw();
+  oculus.draw();
 } 
 
-void onDrawScene(int eye)
-{  
+void onDrawScene(int eye) {
   PVector realWorldPoint;
   PVector realWorldPointMilimeter; 
   int     steps = 8;
@@ -103,15 +91,12 @@ void onDrawScene(int eye)
 
   strokeWeight((float)steps/2.0);
 
-
   ComplexSonarImpulse impulse;
   impulse = null;
-  for (int i = 0; i< sonars.size(); i++)
-  {
+  for (int i = 0; i< sonars.size(); i++) {
     impulse = (ComplexSonarImpulse)sonars.get(i);
     impulse.travelWave();
-    if (impulse.delet)
-    {
+    if (impulse.delet) {
       sonars.remove(i);
       i--;
     }
@@ -123,35 +108,27 @@ void onDrawScene(int eye)
   float pointIntensity = 0;
 
   beginShape(POINTS);
-  for (int y=0;y < context.depthHeight();y+=steps)
-  {
-    for (int x=0;x < context.depthWidth();x+=steps)
-    {
+  for (int y=0; y < context.depthHeight(); y += steps) {
+    for (int x=0; x < context.depthWidth(); x += steps) {
       index = x + y * context.depthWidth();
-      if (depthMap[index] > 0)
-      {
-
+      if (depthMap[index] > 0) {
         realWorldPointMilimeter = realWorldMap[index];
         realWorldPoint = PVector.mult(realWorldPointMilimeter, 0.001f);
         pixelColor = color(0);
         pointIntensity = 0;
-        if (sonars.size() > 0)
-        {
-          for (int i=0; i<sonars.size();i++)
-          {
+        if (sonars.size() > 0) {
+          for (int i=0; i<sonars.size();i++) {
             impulse = (ComplexSonarImpulse)sonars.get(i);
             pointIntensity += impulse.intensityAtPosition(realWorldPoint);
           }
           //println(pointIntensity);
           pixelColor = color(map(pointIntensity, 0, 1.0f, 0, 255)* map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
 
-          if (pointIntensity <= 0.1f)
-          {
+          if (pointIntensity <= 0.1f) {
             pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
           }
         }
-        else
-        {
+        else {
           pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
           //vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
         }
@@ -171,7 +148,8 @@ boolean sketchFullScreen() {
 
 void keyPressed() {
   switch(key) {
-  case ' ':
+    <<<<<<< HEAD
+    case ' ':
     context.setMirror(!context.mirror());
     break;
   case 'q':
@@ -181,6 +159,15 @@ void keyPressed() {
   case 'w':
     addNewImpulse(new PVector(0, 0, 0), 1.0f);
     break;
+    =======
+    case ' ':
+    context.setMirror(!context.mirror());
+    break;
+  case 'q':
+    println("reset head orientation");
+    oculus.resetOrientation();
+    break;
+    >>>>>>> master
   }
 }
 
@@ -198,9 +185,9 @@ PMatrix3D returnMatrixfromAngles(float x, float y, float z) {
   return matrix;
 }
 
-PVector oculusNormalVector(SimpleOculusRift oculusCam) {
+PVector oculusNormalVector() {
   PVector orientation = new PVector();
-  oculusRiftDev.sensorOrientation(orientation);
+  oculus.sensorOrientation(orientation);
   PMatrix3D mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
   PVector normal = mat.mult(new PVector(0, 0, -1), null);
   return normal;

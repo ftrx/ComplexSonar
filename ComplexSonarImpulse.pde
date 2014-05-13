@@ -1,11 +1,11 @@
 class ComplexSonarImpulse {
-  float speed = 0.20f; // m/s
+  float speed = 0.25f; // m/s
   PVector origin = new PVector(0, 0, 0);
   float  originalIntensity = 1.0f;
   float intensity = 1.0f;
   float radius = 0.0f;
-  float maxRadius = 80.0f;
-  float waveLength = 40.0f; // meters
+  float maxRadius = 50.0f;
+  float waveLength = 20.0f; // meters
   float lengthWithMaxIntensity = 2.0f;
   float halfWaveLength = 2.0f;
   boolean delet = false;
