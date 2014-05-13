@@ -10,6 +10,8 @@ boolean fullScreen = true; // false
 int[] depthMap;
 float rotY = 90.0f;
 
+
+PMatrix3D formx = new PMatrix3D();
 void setup()
 {
   if (fullScreen) {
@@ -18,7 +20,7 @@ void setup()
     size(1280, 800, OPENGL);
   }
 
-  oculusRiftDev = new SimpleOculusRift(this,SimpleOculusRift.RenderQuality_Middle); 
+  oculusRiftDev = new SimpleOculusRift(this,SimpleOculusRift.RenderQuality_Low); 
   oculusRiftDev.setBknColor(0, 0, 0);  // just not total black, to see the barr el distortion
 
   strokeWeight(.3);
@@ -31,7 +33,7 @@ void setup()
     return;
   }
   
-  context.setMirror(false); 
+  context.setMirror(true); 
   context.enableDepth();
 }
 
@@ -43,6 +45,17 @@ void draw()
   oculusRiftDev.sensorOrientation(orientation);
   println(orientation);   
   */
+   PMatrix3D headOrientationMatrix = oculusRiftDev.headOrientationMatrix();
+  
+  //headOrientationMatrix.invert();
+   
+  formx = new PMatrix3D();
+  
+
+  
+  formx.apply(headOrientationMatrix); 
+  formx.rotateY(radians(180));
+    formx.translate(0, 0, -3);
    
   context.update();
   depthMap = context.depthMap();
@@ -53,16 +66,18 @@ void draw()
 void onDrawScene(int eye)
 {  
   PVector realWorldPoint;
-  int     steps = 4;
+  int     steps = 8;
   int     index;
   color   pixelColor;
 
   PImage  rgbImage = context.rgbImage();
-
+  
   pushMatrix();
-  rotateY(radians(180));
-  translate(0, 0, -300);
-  strokeWeight((float)steps);
+  applyMatrix(formx);
+ // rotate(radians(180));
+  //translate(0,0,-300);
+  
+  strokeWeight((float)steps/2.0);
 
   PVector[] realWorldMap = context.depthMapRealWorld();
 
@@ -75,9 +90,9 @@ void onDrawScene(int eye)
       if (depthMap[index] > 0)
       {
         realWorldPoint = realWorldMap[index];
-        pixelColor =  color(map(realWorldPoint.z, 0, 10000, 255, 20));
+        pixelColor =  color(map(realWorldPoint.z, 0, 5000, 255, 10));
         stroke(pixelColor);
-        vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
+        vertex(realWorldPoint.x*0.01f, realWorldPoint.y*0.01f, realWorldPoint.z*0.01f);
       }
     }
   }
