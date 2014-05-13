@@ -6,37 +6,30 @@ SimpleOculusRift oculusRiftDev;
 
 boolean fullScreen = true; // false
 
-
 //Kinect
-int[]   depthMap;
-float      rotY = 90.0f;
+int[] depthMap;
+float rotY = 90.0f;
+
 void setup()
 {
-  if (fullScreen)
+  if (fullScreen) {
     size(1280, 800, OPENGL);
-  else    
+  } else {
     size(1280, 800, OPENGL);
-
-  oculusRiftDev = new SimpleOculusRift(this); 
-  oculusRiftDev.setBknColor(10, 13, 2);  // just not total black, to see the barr el distortion
+  }
+  oculusRiftDev = new SimpleOculusRift(this,SimpleOculusRift.RenderQuality_Middle); 
+  oculusRiftDev.setBknColor(0, 0, 0);  // just not total black, to see the barr el distortion
 
   strokeWeight(.3);
 
-
-
-  // kinect
-  //context = new SimpleOpenNI(this, SimpleOpenNI.RUN_MODE_MULTI_THREADED);
-  context = new SimpleOpenNI(this);
-  if (context.isInit() == false)
-  {
+  context = new SimpleOpenNI(this,SimpleOpenNI.RUN_MODE_MULTI_THREADED);
+  if (context.isInit() == false) {
     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
     exit();
     return;
   }
-  // mirror is by default enabled
-  context.setMirror(false);
-
-  // enable depthMap generation 
+  
+  context.setMirror(false); 
   context.enableDepth();
 }
 
@@ -44,23 +37,21 @@ void draw()
 { 
   /*
   // get the data of head tracking sensor
-   PVector orientation = new PVector();
-   oculusRiftDev.sensorOrientation(orientation);
-   println(orientation);   
-   */
-  // kinect
+  PVector orientation = new PVector();
+  oculusRiftDev.sensorOrientation(orientation);
+  println(orientation);   
+  */
+   
   context.update();
-
   depthMap = context.depthMap();
 
   oculusRiftDev.draw();
 } 
 
-// SimpleOculusRift call for drawing the scene for each eye
 void onDrawScene(int eye)
 {  
   PVector realWorldPoint;
-  int     steps   = 4;  // to speed up the drawing, draw every third point
+  int     steps = 4;
   int     index;
   color   pixelColor;
 
@@ -92,64 +83,31 @@ void onDrawScene(int eye)
   popMatrix();
 }
 
-boolean sketchFullScreen() 
-{
+boolean sketchFullScreen() {
   return fullScreen;
 }     
 
-void keyPressed()
-{
-  switch(key)
-  {
-  case ' ':
-    context.setMirror(!context.mirror());
-    break;
-
-  case 'q':
-    println("reset head orientation");
-    oculusRiftDev.resetOrientation();
-    break;
+void keyPressed() {
+  switch(key) {
+    case ' ':
+      context.setMirror(!context.mirror());
+      break;
+    case 'q':
+      println("reset head orientation");
+      oculusRiftDev.resetOrientation();
+      break;
   }
 }
 
-void drawGrid(PVector center, float length, int repeat)
-{
-  pushMatrix();
-
-  translate(center.x, center.y, center.z);
-  float pos;
-
-  for (int x=0; x < repeat+1;x++)
-  {
-    pos = -length *.5 + x * length / repeat;
-
-    line(-length*.5, 0, pos, 
-    length*.5, 0, pos);
-
-    line(pos, 0, -length*.5, 
-    pos, 0, length*.5);
-  }
-
-  popMatrix();
-}
-
-
-//calculate rotationMatrix from angle
-PMatrix3D returnMatrixfromAngles(float x, float y, float z)
-{
+PMatrix3D returnMatrixfromAngles(float x, float y, float z) {
   PMatrix3D matrix = new PMatrix3D();
-
-  // this is specifcly for the simpleOculusRift, for other uses the order of rotation may be different (x,y,z or z,y,x etc)
   matrix.rotateY(y);
   matrix.rotateX(x);
   matrix.rotateZ(z);
   return matrix;
 }
 
-
-// Returns normal vector of the cculus cam
-PVector oculusNormalVector(SimpleOculusRift oculusCam)
-{
+PVector oculusNormalVector(SimpleOculusRift oculusCam) {
   PVector orientation = new PVector();
   oculusRiftDev.sensorOrientation(orientation);
   PMatrix3D mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
