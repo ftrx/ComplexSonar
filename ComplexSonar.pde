@@ -86,9 +86,7 @@ void onDrawScene(int eye) {
 
   pushMatrix();
   applyMatrix(formx);
-  // rotate(radians(180));
-  //translate(0,0,-300);
-
+  
   strokeWeight((float)steps/2.0);
 
   ComplexSonarImpulse impulse;
