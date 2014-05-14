@@ -39,36 +39,27 @@ void setup() {
   context.setMirror(true); 
   context.enableDepth();
 
-  // Audiotoolkit anlegen
   minim = new Minim (this);
-  input = minim.getLineIn (Minim.STEREO, 512);
+  input = minim.getLineIn(Minim.STEREO, 512);
 }
 
 void draw() {
-  /*
-  // get the data of head tracking sensor
-   PVector orientation = new PVector();
-   oculusRiftDev.sensorOrientation(orientation);
-   println(orientation);   
-   */
   PMatrix3D headOrientationMatrix = oculus.headOrientationMatrix();
 
   formx = new PMatrix3D();
   formx.apply(headOrientationMatrix); 
   formx.rotateY(radians(180));
-  formx.translate(0, 0, -1);
+  formx.translate(0, 0, -0.5);
 
   context.update();
   depthMap = context.depthMap();
 
-  dim = input.mix.level () * 10.0f;
-  //println(dim);
+  dim = input.mix.level() * 10.0;
   if (dim > 1.0f && isCool) {
-    addNewImpulse(new PVector(0, 0, 0), 1.0f);
+    addNewImpulse(new PVector(0, 0, 0), 1.0);
     lastWaveTime = millis();
     isCool = false;
-  }
-  else if (millis() - lastWaveTime >= coolDownTime) {
+  } else if (millis() - lastWaveTime >= coolDownTime) {
     isCool = true;
   }
 
@@ -100,16 +91,14 @@ void onDrawScene(int eye) {
     }
   }
 
-
   PVector[] realWorldMap = context.depthMapRealWorld();
-
   float pointIntensity = 0;
 
   beginShape(POINTS);
   for (int y=0; y < context.depthHeight(); y += steps) {
     for (int x=0; x < context.depthWidth(); x += steps) {
       index = x + y * context.depthWidth();
-      if (depthMap[index] > 0) {
+      if (depthMap[index] > 1) {
         realWorldPointMilimeter = realWorldMap[index];
         realWorldPoint = PVector.mult(realWorldPointMilimeter, 0.001f);
         pixelColor = color(0);
@@ -119,14 +108,13 @@ void onDrawScene(int eye) {
             impulse = (ComplexSonarImpulse)sonars.get(i);
             pointIntensity += impulse.intensityAtPosition(realWorldPoint);
           }
-          //println(pointIntensity);
+          
           pixelColor = color(map(pointIntensity, 0, 1.0f, 0, 255)* map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
 
           if (pointIntensity <= 0.1f) {
             pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
           }
-        }
-        else {
+        } else {
           pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
           //vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
         }
@@ -159,8 +147,7 @@ void keyPressed() {
   }
 }
 
-void addNewImpulse(PVector pos, float intens)
-{
+void addNewImpulse(PVector pos, float intens) {
   ComplexSonarImpulse son = new ComplexSonarImpulse(pos, intens);
   sonars.add(son);
 }

@@ -42,13 +42,13 @@ class ComplexSonarImpulse {
       //floatDistanceFromWave = radius - dAbs)/halfWaveLength;
       if (radius - dAbs < lengthWithMaxIntensity) {
         intens = map(radius - dAbs, 0f, lengthWithMaxIntensity, intensity, 0.3f);
-      }
-      else { 
+      } else { 
         intens = map(radius - dAbs, 0f, waveLength, 0.3f, 0.1f);
       }
       return intens;
+    } else {
+      return 0.0f;
     }
-    else return 0.0f;
   }
 }
 
