@@ -2,23 +2,26 @@ import SimpleOculusRift.*;
 import SimpleOpenNI.*;
 import ddf.minim.*;
 
-float dim;
-int coolDownTime = 2000;
-float lastWaveTime = 0.0f;
-boolean isCool = true;
 Minim minim;
 AudioInput input;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
+int SIGNAL_COOLDOWN_TIME = 2000;
+int ROOM_RESOLUTION = 8; // lower = better
+
+float signalIntensity;
+float lastWaveTime = .0;
+boolean signalCooldown = true;
+
 boolean fullScreen = true;
 
 int[] depthMap;
-float rotY = 90.0f;
+PVector[] realWorldDepthMap;
 
-ArrayList sonars = new ArrayList<ComplexSonarImpulse>();
+ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 
-PMatrix3D formx = new PMatrix3D();
+PMatrix3D headOrientation;
 
 void setup() {
   size(1280, 800, OPENGL);
@@ -44,89 +47,80 @@ void setup() {
 }
 
 void draw() {
-  PMatrix3D headOrientationMatrix = oculus.headOrientationMatrix();
-
-  formx = new PMatrix3D();
-  formx.apply(headOrientationMatrix); 
-  formx.rotateY(radians(180));
-  formx.translate(0, 0, -0.5);
+  headOrientation = oculus.headOrientationMatrix(); 
+  headOrientation.rotateY(radians(180));
+  headOrientation.translate(0, 0, -0.5);
 
   context.update();
-  depthMap = context.depthMap();
 
-  dim = input.mix.level() * 10.0;
-  if (dim > 1.0f && isCool) {
+  signalIntensity = input.mix.level() * 10.0;
+  if (signalIntensity > 1.0 && signalCooldown) {
     addNewImpulse(new PVector(0, 0, 0), 1.0);
     lastWaveTime = millis();
-    isCool = false;
-  } else if (millis() - lastWaveTime >= coolDownTime) {
-    isCool = true;
+    signalCooldown = false;
+  } 
+  else if (millis() - lastWaveTime >= SIGNAL_COOLDOWN_TIME) {
+    signalCooldown = true;
   }
+  
+  depthMap = context.depthMap();
+  realWorldDepthMap = context.depthMapRealWorld();
 
   oculus.draw();
 } 
 
 void onDrawScene(int eye) {
-  PVector realWorldPoint;
-  PVector realWorldPointMilimeter; 
-  int     steps = 8;
-  int     index;
-  color   pixelColor;
-
-  PImage  rgbImage = context.rgbImage();
-
   pushMatrix();
-  applyMatrix(formx);
-  
-  strokeWeight((float)steps/2.0);
+  applyMatrix(headOrientation);
 
-  ComplexSonarImpulse impulse;
-  impulse = null;
-  for (int i = 0; i< sonars.size(); i++) {
-    impulse = (ComplexSonarImpulse)sonars.get(i);
+  strokeWeight((float)ROOM_RESOLUTION/2.0);
+
+  Impulse impulse = null;
+  for (int i = 0; i < impulses.size(); i++) {
+    impulse = impulses.get(i);
     impulse.travelWave();
-    if (impulse.delet) {
-      sonars.remove(i);
+    if (impulse.delete) {
+      impulses.remove(i);
       i--;
     }
   }
 
-  PVector[] realWorldMap = context.depthMapRealWorld();
-  float pointIntensity = 0;
+  int currentMapIndex;
+  PVector currentPoint;
+  float currentPointIntensity = 0;
+  color currentPointColor;
 
   beginShape(POINTS);
-  for (int y=0; y < context.depthHeight(); y += steps) {
-    for (int x=0; x < context.depthWidth(); x += steps) {
-      index = x + y * context.depthWidth();
-      if (depthMap[index] > 1) {
-        realWorldPointMilimeter = realWorldMap[index];
-        realWorldPoint = PVector.mult(realWorldPointMilimeter, 0.001f);
-        pixelColor = color(0);
-        pointIntensity = 0;
-        if (sonars.size() > 0) {
-          for (int i=0; i<sonars.size();i++) {
-            impulse = (ComplexSonarImpulse)sonars.get(i);
-            pointIntensity += impulse.intensityAtPosition(realWorldPoint);
-          }
-          
-          pixelColor = color(map(pointIntensity, 0, 1.0f, 0, 255)* map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
+  
+  for (int y=0; y < context.depthHeight(); y += ROOM_RESOLUTION) {
+    for (int x=0; x < context.depthWidth(); x += ROOM_RESOLUTION) {
+      currentMapIndex = x + y * context.depthWidth();
+      
+      if (depthMap[currentMapIndex] > 1) {
+        currentPoint = PVector.mult(realWorldDepthMap[currentMapIndex], 0.001);
+        currentPointIntensity = cumulatedImpulseIntensityAtPosition(currentPoint);
 
-          if (pointIntensity <= 0.1f) {
-            pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
-          }
+        if (currentPointIntensity <= 0.1) {
+          currentPointColor = color(10.0 * map(currentPoint.z, .0, 10.0, 1.0, 0.5));
         } else {
-          pixelColor = color(10f * map(realWorldPoint.z, 0f, 10.0f, 1.0f, 0.5f));
-          //vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
+          currentPointColor = color(map(currentPointIntensity, 0, 1.0, 0, 255)* map(currentPoint.z, .0, 10.0, 1.0, 0.5));
         }
 
-        stroke(pixelColor);
-        vertex(realWorldPoint.x, realWorldPoint.y, realWorldPoint.z);
+        stroke(currentPointColor);
+        vertex(currentPoint.x, currentPoint.y, currentPoint.z);
       }
     }
   }
+  
   endShape();
   popMatrix();
 }
+
+void addNewImpulse(PVector pos, float intens) {
+  impulses.add(new Impulse(pos, intens));
+}
+
+/* Processing Callbacks */
 
 boolean sketchFullScreen() {
   return fullScreen;
@@ -134,37 +128,15 @@ boolean sketchFullScreen() {
 
 void keyPressed() {
   switch(key) {
-    case ' ':
+  case ' ': // switch mirror
     context.setMirror(!context.mirror());
     break;
-  case 'q':
-    println("reset head orientation");
+  case 'q': // reset oculus orientation
     oculus.resetOrientation();
     break;
-  case 'w':
-    addNewImpulse(new PVector(0, 0, 0), 1.0f);
+  case 'w': // add new impulse from center
+    addNewImpulse(new PVector(0, 0, 0), 1.0);
     break;
   }
-}
-
-void addNewImpulse(PVector pos, float intens) {
-  ComplexSonarImpulse son = new ComplexSonarImpulse(pos, intens);
-  sonars.add(son);
-}
-
-PMatrix3D returnMatrixfromAngles(float x, float y, float z) {
-  PMatrix3D matrix = new PMatrix3D();
-  matrix.rotateY(y);
-  matrix.rotateX(x);
-  matrix.rotateZ(z);
-  return matrix;
-}
-
-PVector oculusNormalVector() {
-  PVector orientation = new PVector();
-  oculus.sensorOrientation(orientation);
-  PMatrix3D mat = returnMatrixfromAngles(orientation.y, orientation.x, orientation.z);
-  PVector normal = mat.mult(new PVector(0, 0, -1), null);
-  return normal;
 }
 
