@@ -7,6 +7,17 @@ float cumulatedImpulseIntensityAtPosition(PVector point) {
   return cumulatedIntensity;
 }
 
+void updateImpulses() {
+  for (int i = 0; i < impulses.size(); i++) {
+    Impulse impulse = impulses.get(i);
+    impulse.travelWave();
+    if (impulse.delete) {
+      impulses.remove(i);
+      i--;
+    }
+  }
+}
+
 class Impulse {
   float speed = 0.25; // m/s
   PVector origin = new PVector(0, 0, 0);

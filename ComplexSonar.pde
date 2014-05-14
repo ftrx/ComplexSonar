@@ -75,15 +75,7 @@ void onDrawScene(int eye) {
 
   strokeWeight((float)ROOM_RESOLUTION/2.0);
 
-  Impulse impulse = null;
-  for (int i = 0; i < impulses.size(); i++) {
-    impulse = impulses.get(i);
-    impulse.travelWave();
-    if (impulse.delete) {
-      impulses.remove(i);
-      i--;
-    }
-  }
+  updateImpulses();
 
   int currentMapIndex;
   PVector currentPoint;
