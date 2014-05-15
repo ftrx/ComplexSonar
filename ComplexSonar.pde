@@ -8,14 +8,14 @@ AudioInput input;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
-int SIGNAL_COOLDOWN_TIME = 2000;
+int SIGNAL_COOLDOWN_TIME = 1000;
 int ROOM_RESOLUTION = 8; // lower = better
 
 float signalIntensity;
 float lastWaveTime = .0;
 boolean signalCooldown = true;
 
-boolean fullScreen = false;
+boolean fullScreen = true;
 
 int[] depthMap;
 PVector[] realWorldDepthMap;
@@ -28,7 +28,7 @@ ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 PMatrix3D headOrientation;
 
 int frequenceIndex = 0;
-float blurShift = 0.02;
+float blurShift = 0.01;
 float standardBlur = 0.04f;
 
 void setup() {
