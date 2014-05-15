@@ -10,28 +10,26 @@ SimpleOculusRift oculus;
 
 int SIGNAL_COOLDOWN_TIME = 100;
 int ROOM_RESOLUTION = 8; // lower = better
+boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
+boolean RUN_FULLSCREEN = true;
 
 float signalIntensity;
 float lastWaveTime = .0;
 boolean signalCooldown = true;
 
-boolean fullScreen = true;
-
+PImage rgbImage;
 int[] depthMap;
 PVector[] realWorldDepthMap;
-
-boolean useColorImage = false; // does not work in completly dark environments
-PImage rgbImage;
 
 ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 
 PMatrix3D headOrientation;
 
 float threshhold = 15.0;
-int frequenceIndex = 0;
+float frequenceIndex = 0;
 float blurShift = 0.04;
 float standardShift = 0.08;
-int maxFrequenceIndex = 5;
+float maxFrequenceIndex = 5;
 
 void setup() {
   size(1280, 800, OPENGL);
@@ -68,7 +66,7 @@ void draw() {
   signalIntensity = input.mix.level() * 10.0;
   if (getLoudestFrequence(threshhold, input) > -1 && signalCooldown ) {
     frequenceIndex = maxFrequenceIndex - getLoudestFrequence(10, input);   
-    addNewImpulse(new PVector(0, 0, 0), 1.0, frequenceIndex);
+    addNewImpulse(new PVector(0, 0, 0), 1.0, int(frequenceIndex));
     if (frequenceIndex <= 0)
       frequenceIndex = 0;
     lastWaveTime = millis();
@@ -115,7 +113,7 @@ void onDrawScene(int eye) {
         int g = 255;
         int b = 255;
 
-        if (useColorImage) {
+        if (USE_COLOR_IMAGE) {
           currentPointColor = rgbImage.pixels[currentMapIndex];
           r = (currentPointColor >> 16) & 0xFF; // Faster way of getting red(argb)
           g = (currentPointColor >> 8) & 0xFF; // Faster way of getting green(argb)
@@ -125,6 +123,7 @@ void onDrawScene(int eye) {
         if (currentPointIntensity <= 0.1) {
           currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, 5.0, 1.0, 0.1));
           stroke(currentPointColor);
+          
           vertex(
             currentPoint.x + random(-standardShift, standardShift),
             currentPoint.y + random(-standardShift, standardShift),
@@ -135,9 +134,9 @@ void onDrawScene(int eye) {
           float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1);
           currentPointColor = color(r, g, b, alphaValue);
           stroke(currentPointColor);
-          float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint);
           
-          float maxFrequenceShift = currentPointFrequence / (float)maxFrequenceIndex * blurShift;
+          float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint);
+          float maxFrequenceShift = currentPointFrequence / maxFrequenceIndex * blurShift;
           float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardShift, maxFrequenceShift);
           
           vertex(
@@ -189,7 +188,7 @@ int getLoudestFrequence(float threshold, AudioInput in)
 /* Processing Callbacks */
 
 boolean sketchFullScreen() {
-  return fullScreen;
+  return RUN_FULLSCREEN;
 }     
 
 void keyPressed() {

@@ -13,10 +13,9 @@ float cumulatedImpulseFrequenceAtPosition(PVector point) {
   for (int i=0; i < impulses.size(); i++) {
     Impulse impulse = impulses.get(i);
     cumulatedIntensity += impulse.intensityAtPosition(point);
-    cumulatedFrequence += impulse.intensityAtPosition(point)*impulse.frequenceIndex;
+    cumulatedFrequence += impulse.intensityAtPosition(point) * impulse.frequenceIndex;
   }
-  cumulatedFrequence /= cumulatedIntensity / impulses.size();
-  return cumulatedFrequence;
+  return cumulatedFrequence / cumulatedIntensity / impulses.size();
 }
 
 void updateImpulses() {
