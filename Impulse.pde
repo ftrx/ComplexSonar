@@ -7,6 +7,18 @@ float cumulatedImpulseIntensityAtPosition(PVector point) {
   return cumulatedIntensity;
 }
 
+float cumulatedImpulseFrequenceAtPosition(PVector point) {
+  float cumulatedFrequence = 0;
+  float cumulatedIntensity = 0;
+  for (int i=0; i < impulses.size(); i++) {
+    Impulse impulse = impulses.get(i);
+    cumulatedIntensity += impulse.intensityAtPosition(point);
+    cumulatedFrequence += impulse.intensityAtPosition(point)*impulse.frequenceIndex;
+  }
+  cumulatedFrequence /= cumulatedIntensity / impulses.size();
+  return cumulatedFrequence;
+}
+
 void updateImpulses() {
   for (int i = 0; i < impulses.size(); i++) {
     Impulse impulse = impulses.get(i);
@@ -30,10 +42,12 @@ class Impulse {
   float halfWaveLength = 2.0;
   boolean delete = false;
   int lastTime = 0;
+  int frequenceIndex = 0;
 
-  Impulse(PVector position, float _originalIntensity) {
+  Impulse(PVector position, float _originalIntensity, int _frequence) {
     radius = 1.0;
     origin = position;
+    frequenceIndex = _frequence;
     originalIntensity = _originalIntensity;
     halfWaveLength = waveLength * 0.5;
     lastTime = millis();

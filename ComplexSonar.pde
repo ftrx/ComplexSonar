@@ -8,7 +8,7 @@ AudioInput input;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
-int SIGNAL_COOLDOWN_TIME = 1000;
+int SIGNAL_COOLDOWN_TIME = 100;
 int ROOM_RESOLUTION = 8; // lower = better
 
 float signalIntensity;
@@ -27,9 +27,11 @@ ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 
 PMatrix3D headOrientation;
 
+float threshhold = 15.0;
 int frequenceIndex = 0;
-float blurShift = 0.01;
-float standardBlur = 0.04f;
+float blurShift = 0.04;
+float standardBlur = 0.08f;
+int maxFrequenceIndex = 5;
 
 void setup() {
   size(1280, 800, OPENGL);
@@ -64,9 +66,9 @@ void draw() {
   context.update();
 
   signalIntensity = input.mix.level() * 10.0;
-  if (getLoudestFrequence(10, input) > -1 && signalCooldown ) {
-    addNewImpulse(new PVector(0, 0, 0), 1.0);
-    frequenceIndex = 4 - getLoudestFrequence(10, input);   
+  if (getLoudestFrequence(threshhold, input) > -1 && signalCooldown ) {
+    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(10, input);   
+    addNewImpulse(new PVector(0, 0, 0), 1.0, frequenceIndex);
     if (frequenceIndex <= 0)
       frequenceIndex = 0;
     lastWaveTime = millis();
@@ -123,12 +125,13 @@ void onDrawScene(int eye) {
         if (currentPointIntensity <= 0.1) {
           currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, 5.0, 1.0, 0.1));
           stroke(currentPointColor);
-          vertex(currentPoint.x + random(-frequenceIndex, frequenceIndex)*standardBlur, currentPoint.y + random(-frequenceIndex, frequenceIndex)*standardBlur, currentPoint.z + random(-frequenceIndex, frequenceIndex)* standardBlur);
+          vertex(currentPoint.x + random(-standardBlur, standardBlur), currentPoint.y + random(-standardBlur, standardBlur), currentPoint.z + random(-standardBlur, standardBlur));
         } 
         else {
           currentPointColor = color(r, g, b, map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1));
           stroke(currentPointColor);
-          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardBlur, frequenceIndex);
+          float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint);
+          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardBlur, currentPointFrequence/(float)maxFrequenceIndex*blurShift);
           vertex(currentPoint.x + random(-intensityOffset, intensityOffset), currentPoint.y + random(-intensityOffset, intensityOffset), currentPoint.z + random(-intensityOffset, intensityOffset));
         }
       }
@@ -139,8 +142,8 @@ void onDrawScene(int eye) {
   popMatrix();
 }
 
-void addNewImpulse(PVector pos, float intens) {
-  impulses.add(new Impulse(pos, intens));
+void addNewImpulse(PVector pos, float intens, int frequence) {
+  impulses.add(new Impulse(pos, intens, frequence));
 }
 
 int getLoudestFrequence(float threshold, AudioInput in)
@@ -184,7 +187,7 @@ void keyPressed() {
     oculus.resetOrientation();
     break;
   case 'w': // add new impulse from center
-    addNewImpulse(new PVector(0, 0, 0), 1.0);
+    addNewImpulse(new PVector(0, 0, 0), 1.0, 0);
     break;
   }
 }
