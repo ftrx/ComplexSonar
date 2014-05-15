@@ -26,11 +26,13 @@ PImage rgbImage;
 ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 
 PMatrix3D headOrientation;
+float maxZDepth = 7.0; // meters
+
 
 float impulseThreshhold = 15.0;
 int frequenceIndex = 0;
-float blurShift = 0.04;
-float standardShift = 0.08;
+float blurShift = 0.02;
+float standardShift = 0.04;
 int maxFrequenceIndex = 5;
 
 void setup() {
@@ -123,7 +125,7 @@ void onDrawScene(int eye) {
         }
 
         if (currentPointIntensity <= 0.1) {
-          currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, 5.0, 1.0, 0.1));
+          currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, maxZDepth, 1.0, 0.1));
           stroke(currentPointColor);
           vertex(
             currentPoint.x + random(-standardShift, standardShift),
@@ -132,14 +134,15 @@ void onDrawScene(int eye) {
           );
         } 
         else {
-          float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1);
+          float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, maxZDepth, 1.0, 0.1);
           currentPointColor = color(r, g, b, alphaValue);
           stroke(currentPointColor);
         
           float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint); 
+         // currentPointFrequence = frequenceIndex;
           float maxFrequenceShift = currentPointFrequence / (float)maxFrequenceIndex * blurShift;
           float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardShift, maxFrequenceShift);
-          
+          intensityOffset = constrain(intensityOffset,0.0,1.0);
           vertex(
             currentPoint.x + random(-intensityOffset, intensityOffset),
             currentPoint.y + random(-intensityOffset, intensityOffset),

@@ -24,8 +24,8 @@ void updateImpulses() {
     Impulse impulse = impulses.get(i);
     impulse.travelWave();
     if (impulse.delete) {
-      impulses.remove(i);
-      i--;
+      //impulses.remove(i);
+     // i--;
     }
   }
 }
@@ -38,7 +38,7 @@ class Impulse {
   float radius = .0;
   float maxRadius = 50.0;
   float waveLength = 20.0; // meters
-  float lengthWithMaxIntensity = 2.0;
+  float lengthWithMaxIntensity = 4.0;
   float halfWaveLength = 2.0;
   boolean delete = false;
   int lastTime = 0;
