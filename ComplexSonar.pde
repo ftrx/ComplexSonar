@@ -8,9 +8,6 @@ AudioInput input;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
-
-
-
 int SIGNAL_COOLDOWN_TIME = 2000;
 int ROOM_RESOLUTION = 8; // lower = better
 
@@ -48,9 +45,6 @@ void setup() {
 
   minim = new Minim (this);
   input = minim.getLineIn(Minim.STEREO, 512);
-  
-  
-  
 }
 
 void draw() {
@@ -123,35 +117,26 @@ void addNewImpulse(PVector pos, float intens) {
 
 void getLoudestFrequence(float threshold, AudioInput in)
 {
-  FFT fftLog;
-  fftLog = new FFT( in.bufferSize(), in.sampleRate() );
-   // calculate averages based on a miminum octave width of 22 Hz
+  FFT fft = new FFT(in.bufferSize(), in.sampleRate());
+  // calculate averages based on a miminum octave width of 22 Hz
   // split each octave into three bands
   // this should result in 30 averages
-  fftLog.logAverages( 22, 1 );
-  fftLog.forward( in.mix );
+  fft.logAverages(22, 1);
+  fft.forward(in.mix);
   int loudestFrequency;
   float strLoudestFrequency = 0.0f;
   float loudestAverage = 0.0f;
-  
   float spectrumScale = 4;
    
-   for (int i=0;i< fftLog.avgSize(); i++){
-     //println(fftLog.getAvg(i)*spectrumScale);
-     if (loudestAverage < fftLog.getAvg(i)*spectrumScale) {
-       loudestAverage = fftLog.getAvg(i)*spectrumScale;
-        strLoudestFrequency    = fftLog.getAverageCenterFrequency(i);
-       loudestFrequency = i;
-     }
-     
-     
-    
-   }
+  for (int i=0; i < fftLog.avgSize(); i++){
+    if (loudestAverage < fftLog.getAvg(i) * spectrumScale) {
+      loudestAverage = fftLog.getAvg(i) * spectrumScale;
+      strLoudestFrequency = fftLog.getAverageCenterFrequency(i);
+      loudestFrequency = i;
+    }
+  }
   
-  
-  
-  
-  println("frequence: " +    strLoudestFrequency + ", amount: " + loudestAverage);
+  // println("frequence: " + strLoudestFrequency + ", amount: " + loudestAverage);
 }
 
 /* Processing Callbacks */
@@ -173,4 +158,3 @@ void keyPressed() {
     break;
   }
 }
-
