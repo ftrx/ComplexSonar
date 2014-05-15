@@ -20,8 +20,8 @@ boolean fullScreen = true;
 int[] depthMap;
 PVector[] realWorldDepthMap;
 
-boolean useColorImage  = false; // does not work in completly dark environments
-PImage  rgbImage;
+boolean useColorImage = false; // does not work in completly dark environments
+PImage rgbImage;
 
 ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 
@@ -30,7 +30,7 @@ PMatrix3D headOrientation;
 float impulseThreshhold = 15.0;
 int frequenceIndex = 0;
 float blurShift = 0.04;
-float standardBlur = 0.08f;
+float standardShift = 0.08;
 int maxFrequenceIndex = 5;
 
 void setup() {
@@ -83,8 +83,8 @@ void draw() {
 
   rgbImage = context.rgbImage();
 
-  //getLoudestFrequence(1.0, input);
-  println(frequenceIndex);
+  // getLoudestFrequence(1.0, input);
+  
   oculus.draw();
 } 
 
@@ -117,23 +117,40 @@ void onDrawScene(int eye) {
 
         if (useColorImage) {
           currentPointColor = rgbImage.pixels[currentMapIndex];
-          r = (currentPointColor >> 16) & 0xFF;  // Faster way of getting red(argb)
-          g = (currentPointColor >> 8) & 0xFF;   // Faster way of getting green(argb)
+          r = (currentPointColor >> 16) & 0xFF; // Faster way of getting red(argb)
+          g = (currentPointColor >> 8) & 0xFF; // Faster way of getting green(argb)
           b = currentPointColor & 0xFF;
         }
 
         if (currentPointIntensity <= 0.1) {
           currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, 5.0, 1.0, 0.1));
           stroke(currentPointColor);
-          vertex(currentPoint.x + random(-standardBlur, standardBlur), currentPoint.y + random(-standardBlur, standardBlur), currentPoint.z + random(-standardBlur, standardBlur));
+          vertex(
+            currentPoint.x + random(-standardShift, standardShift),
+            currentPoint.y + random(-standardShift, standardShift),
+            currentPoint.z + random(-standardShift, standardShift)
+          );
         } 
         else {
-          currentPointColor = color(r, g, b, map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1));
+          float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1);
+          currentPointColor = color(r, g, b, alphaValue);
           stroke(currentPointColor);
           float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint);
+<<<<<<< HEAD
           //println(currentPointFrequence);
           float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardBlur, currentPointFrequence/maxFrequenceIndex * blurShift);
           vertex(currentPoint.x + random(-intensityOffset, intensityOffset), currentPoint.y + random(-intensityOffset, intensityOffset), currentPoint.z + random(-intensityOffset, intensityOffset));
+=======
+          
+          float maxFrequenceShift = currentPointFrequence / (float)maxFrequenceIndex * blurShift;
+          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardShift, maxFrequenceShift);
+          
+          vertex(
+            currentPoint.x + random(-intensityOffset, intensityOffset),
+            currentPoint.y + random(-intensityOffset, intensityOffset),
+            currentPoint.z + random(-intensityOffset, intensityOffset)
+          );
+>>>>>>> master
         }
       }
     }
@@ -167,10 +184,12 @@ int getLoudestFrequence(float threshold, AudioInput in)
       loudestFrequency = i;
     }
   }
-  if (loudestAverage > threshold)
+  
+  if (loudestAverage > threshold) {
     return loudestFrequency;
-  else
+  } else {
     return -1;
+  }    
 }
 
 /* Processing Callbacks */
@@ -192,4 +211,3 @@ void keyPressed() {
     break;
   }
 }
-
