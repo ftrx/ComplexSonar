@@ -27,7 +27,7 @@ ArrayList<Impulse> impulses = new ArrayList<Impulse>();
 
 PMatrix3D headOrientation;
 
-float threshhold = 15.0;
+float impulseThreshhold = 15.0;
 int frequenceIndex = 0;
 float blurShift = 0.04;
 float standardShift = 0.08;
@@ -66,8 +66,8 @@ void draw() {
   context.update();
 
   signalIntensity = input.mix.level() * 10.0;
-  if (getLoudestFrequence(threshhold, input) > -1 && signalCooldown ) {
-    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(10, input);   
+  if (getLoudestFrequence(impulseThreshhold, input) > -1 && signalCooldown ) {
+    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(impulseThreshhold, input);   
     addNewImpulse(new PVector(0, 0, 0), 1.0, frequenceIndex);
     if (frequenceIndex <= 0)
       frequenceIndex = 0;
@@ -135,8 +135,7 @@ void onDrawScene(int eye) {
           float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1);
           currentPointColor = color(r, g, b, alphaValue);
           stroke(currentPointColor);
-          float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint);
-          
+          float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint); 
           float maxFrequenceShift = currentPointFrequence / (float)maxFrequenceIndex * blurShift;
           float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardShift, maxFrequenceShift);
           
