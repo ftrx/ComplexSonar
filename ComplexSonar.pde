@@ -15,7 +15,7 @@ float signalIntensity;
 float lastWaveTime = .0;
 boolean signalCooldown = true;
 
-boolean fullScreen = false;
+boolean fullScreen = true;
 
 int[] depthMap;
 PVector[] realWorldDepthMap;
@@ -128,10 +128,10 @@ void getLoudestFrequence(float threshold, AudioInput in)
   float loudestAverage = 0.0f;
   float spectrumScale = 4;
    
-  for (int i=0; i < fftLog.avgSize(); i++){
-    if (loudestAverage < fftLog.getAvg(i) * spectrumScale) {
-      loudestAverage = fftLog.getAvg(i) * spectrumScale;
-      strLoudestFrequency = fftLog.getAverageCenterFrequency(i);
+  for (int i=0; i < fft.avgSize(); i++){
+    if (loudestAverage < fft.getAvg(i) * spectrumScale) {
+      loudestAverage = fft.getAvg(i) * spectrumScale;
+      strLoudestFrequency = fft.getAverageCenterFrequency(i);
       loudestFrequency = i;
     }
   }
