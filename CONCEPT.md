@@ -1,4 +1,4 @@
-Konzept
+# Konzept
 
 Als erste Idee für unseren Oculus-Rift Workshop, versuchten wir den Sehsinn einer Fledermaus nach zu empfinden. Die Applikation ist ein Sonar, mit welchem man sich in der Nacht (oder auch Tag) orientieren kann. Durch das Erzeugen von Lauten, wie eine Fledermaus das auch tut, beginnt der Infrarotscan der Kinect und scannt die Umgebung Umgebung. Das Scanbild wird als 3D-Punktvisualisierung dargestellt und verhilft so sich ein räumliches Bild zu schaffen. Menschen können sich so in einem komplett dunklen Raum zurechtfinden. 
 
