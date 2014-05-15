@@ -135,6 +135,7 @@ void onDrawScene(int eye) {
           float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, 5.0, 1.0, 0.1);
           currentPointColor = color(r, g, b, alphaValue);
           stroke(currentPointColor);
+        
           float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint); 
           float maxFrequenceShift = currentPointFrequence / (float)maxFrequenceIndex * blurShift;
           float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardShift, maxFrequenceShift);
