@@ -13,8 +13,8 @@ int SIGNAL_COOLDOWN_TIME = 500;
 int ROOM_RESOLUTION = 8; // lower = better
 boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
 boolean RUN_FULLSCREEN = true;
+float IMPULSE_THRESHOLD = 20.0;
 
-float signalIntensity;
 float lastWaveTime = .0;
 boolean signalCooldown = true;
 
@@ -22,19 +22,13 @@ PImage rgbImage;
 int[] depthMap;
 PVector[] realWorldDepthMap;
 
-ArrayList<Impulse> impulses = new ArrayList<Impulse>();
-
 PMatrix3D headOrientation;
 float maxZDepth = 7.0; // meters
-
-
-float impulseThreshhold = 20.0;
 
 float frequenceIndex = 0;
 float blurShift = 0.08;
 float standardShift = 0.06;
 float maxFrequenceIndex = 4;
-
 
 void setup() {
   size(1280, 800, OPENGL);
@@ -68,19 +62,18 @@ void draw() {
   headOrientation.translate(0, 0, -0.5);
 
   context.update();
-
-  signalIntensity = input.mix.level() * 10.0;
-  if (getLoudestFrequence(impulseThreshhold) > -1 && signalCooldown) {
-    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(impulseThreshhold); 
-    //frequenceIndex = getLoudestFrequence(impulseThreshhold, input); 
-    println(frequenceIndex);  
-    addNewImpulse(new PVector(0, 0, 0), 1.0, int(frequenceIndex));
-    if (frequenceIndex <= 0)
-      frequenceIndex = 0;
+  
+  float loudestFrequence = getLoudestFrequence(IMPULSE_THRESHOLD);
+  // maxFrequenceIndex - getLoudestFrequence(IMPULSE_THRESHOLD);
+  // println(loudestFrequence);
+  
+  if (loudestFrequence >= 0 && signalCooldown) { 
+    addNewImpulse(new PVector(0, 0, 0), 1.0, int(loudestFrequence));
     lastWaveTime = millis();
     signalCooldown = false;
-  } 
-  else if (millis() - lastWaveTime >= SIGNAL_COOLDOWN_TIME) {
+  }
+  
+  if (millis() - lastWaveTime >= SIGNAL_COOLDOWN_TIME) {
     signalCooldown = true;
   }
 
@@ -88,8 +81,6 @@ void draw() {
   realWorldDepthMap = context.depthMapRealWorld();
 
   rgbImage = context.rgbImage();
-
-  // getLoudestFrequence(1.0, input);
   
   oculus.draw();
 } 
@@ -161,35 +152,6 @@ void onDrawScene(int eye) {
 
   endShape();
   popMatrix();
-}
-
-void addNewImpulse(PVector pos, float intens, int frequence) {
-  impulses.add(new Impulse(pos, intens, frequence));
-}
-
-int getLoudestFrequence(float threshold) {
-  // calculate averages based on a miminum octave width of 22 Hz
-  // split each octave into three bands
-  // this should result in 30 averages
-  fft.logAverages(22, 1);
-  fft.forward(input.mix);
-  
-  int loudestFrequency = -1;
-  float loudestAverage = 0.0f;
-
-  for (int i=0; i < fft.avgSize(); i++) {
-    float newAverage = fft.getAvg(i);
-    if (loudestAverage < newAverage) {
-      loudestAverage = newAverage;
-      loudestFrequency = i;
-    }
-  }
-  
-  if (loudestAverage > threshold) {
-    return loudestFrequency;
-  } else {
-    return -1;
-  }    
 }
 
 /* Processing Callbacks */

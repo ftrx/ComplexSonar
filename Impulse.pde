@@ -1,3 +1,9 @@
+ArrayList<Impulse> impulses = new ArrayList<Impulse>();
+
+void addNewImpulse(PVector pos, float intens, int frequence) {
+  impulses.add(new Impulse(pos, intens, frequence));
+}
+
 float cumulatedImpulseIntensityAtPosition(PVector point) {
   float cumulatedIntensity = 0;
   for (int i=0; i < impulses.size(); i++) {
