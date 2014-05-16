@@ -10,12 +10,18 @@ float cumulatedImpulseIntensityAtPosition(PVector point) {
 float cumulatedImpulseFrequenceAtPosition(PVector point) {
   float cumulatedFrequence = 0;
   float cumulatedIntensity = 0;
+  int numberOfWavesAtPoint = 0;
   for (int i=0; i < impulses.size(); i++) {
     Impulse impulse = impulses.get(i);
-    cumulatedIntensity += impulse.intensityAtPosition(point);
-    cumulatedFrequence += impulse.intensityAtPosition(point) * impulse.frequenceIndex;
+    if (impulse.intensityAtPosition(point) > 0)
+    {
+      cumulatedIntensity += impulse.intensityAtPosition(point);
+      cumulatedFrequence += impulse.intensityAtPosition(point) * impulse.frequenceIndex;
+      numberOfWavesAtPoint ++;
+    }
+    
   }
-  return cumulatedFrequence / cumulatedIntensity / impulses.size();
+  return cumulatedFrequence / cumulatedIntensity / numberOfWavesAtPoint;
 }
 
 void updateImpulses() {
@@ -23,8 +29,8 @@ void updateImpulses() {
     Impulse impulse = impulses.get(i);
     impulse.travelWave();
     if (impulse.delete) {
-      //impulses.remove(i);
-     // i--;
+      impulses.remove(i);
+      i--;
     }
   }
 }
@@ -36,8 +42,8 @@ class Impulse {
   float actualIntensity = 1.0;
   float radius = .0;
   float maxRadius = 50.0;
-  float waveLength = 20.0; // meters
-  float lengthWithMaxIntensity = 4.0;
+  float waveLength = 30.0; // meters
+  float lengthWithMaxIntensity = 8.0;
   float halfWaveLength = 2.0;
   boolean delete = false;
   int lastTime = 0;
@@ -67,9 +73,9 @@ class Impulse {
     
     if (distance > (radius - waveLength) &&  distance < radius) {
       if (radius - distance < lengthWithMaxIntensity) {
-        intensity = map(radius - distance, .0, lengthWithMaxIntensity, actualIntensity, 0.3);
+        intensity = map(radius - distance, .0, lengthWithMaxIntensity, actualIntensity, 0.7);
       } else { 
-        intensity = map(radius - distance, .0, waveLength, 0.3, 0.1);
+        intensity = map(radius - distance, lengthWithMaxIntensity, waveLength, 0.7, 0.1);
       }
       return intensity;
     }

@@ -8,10 +8,10 @@ AudioInput input;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
-int SIGNAL_COOLDOWN_TIME = 100;
+int SIGNAL_COOLDOWN_TIME = 500;
 int ROOM_RESOLUTION = 8; // lower = better
 boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
-boolean RUN_FULLSCREEN = true;
+boolean RUN_FULLSCREEN = false;
 
 float signalIntensity;
 float lastWaveTime = .0;
@@ -27,12 +27,12 @@ PMatrix3D headOrientation;
 float maxZDepth = 7.0; // meters
 
 
-float impulseThreshhold = 15.0;
+float impulseThreshhold = 20.0;
 
 float frequenceIndex = 0;
-float blurShift = 0.04;
-float standardShift = 0.08;
-float maxFrequenceIndex = 5;
+float blurShift = 0.08;
+float standardShift = 0.06;
+float maxFrequenceIndex = 4;
 
 
 void setup() {
@@ -69,7 +69,9 @@ void draw() {
 
   signalIntensity = input.mix.level() * 10.0;
   if (getLoudestFrequence(impulseThreshhold, input) > -1 && signalCooldown) {
-    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(impulseThreshhold, input);   
+    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(impulseThreshhold, input); 
+    //frequenceIndex = getLoudestFrequence(impulseThreshhold, input); 
+    println(frequenceIndex);  
     addNewImpulse(new PVector(0, 0, 0), 1.0, int(frequenceIndex));
     if (frequenceIndex <= 0)
       frequenceIndex = 0;
@@ -177,14 +179,14 @@ int getLoudestFrequence(float threshold, AudioInput in)
   float spectrumScale = 1;
 
   for (int i=0; i < fft.avgSize(); i++) {
-    if (loudestAverage < fft.getAvg(i) * spectrumScale) {
+    if (loudestAverage < (fft.getAvg(i) * spectrumScale)) {
       loudestAverage = fft.getAvg(i) * spectrumScale;
       strLoudestFrequency = fft.getAverageCenterFrequency(i);
       loudestFrequency = i;
     }
   }
-  
   if (loudestAverage > threshold) {
+    
     return loudestFrequency;
   } else {
     return -1;
