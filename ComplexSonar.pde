@@ -5,6 +5,7 @@ import ddf.minim.*;
 
 Minim minim;
 AudioInput input;
+FFT fft;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
@@ -58,6 +59,7 @@ void setup() {
 
   minim = new Minim (this);
   input = minim.getLineIn(Minim.STEREO, 512);
+  fft = new FFT(input.bufferSize(), input.sampleRate());
 }
 
 void draw() {
@@ -68,8 +70,8 @@ void draw() {
   context.update();
 
   signalIntensity = input.mix.level() * 10.0;
-  if (getLoudestFrequence(impulseThreshhold, input) > -1 && signalCooldown) {
-    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(impulseThreshhold, input); 
+  if (getLoudestFrequence(impulseThreshhold) > -1 && signalCooldown) {
+    frequenceIndex = maxFrequenceIndex - getLoudestFrequence(impulseThreshhold); 
     //frequenceIndex = getLoudestFrequence(impulseThreshhold, input); 
     println(frequenceIndex);  
     addNewImpulse(new PVector(0, 0, 0), 1.0, int(frequenceIndex));
@@ -165,28 +167,25 @@ void addNewImpulse(PVector pos, float intens, int frequence) {
   impulses.add(new Impulse(pos, intens, frequence));
 }
 
-int getLoudestFrequence(float threshold, AudioInput in)
-{
-  FFT fft = new FFT(in.bufferSize(), in.sampleRate());
+int getLoudestFrequence(float threshold) {
   // calculate averages based on a miminum octave width of 22 Hz
   // split each octave into three bands
   // this should result in 30 averages
   fft.logAverages(22, 1);
-  fft.forward(in.mix);
+  fft.forward(input.mix);
+  
   int loudestFrequency = -1;
-  float strLoudestFrequency = 0.0f;
   float loudestAverage = 0.0f;
-  float spectrumScale = 1;
 
   for (int i=0; i < fft.avgSize(); i++) {
-    if (loudestAverage < (fft.getAvg(i) * spectrumScale)) {
-      loudestAverage = fft.getAvg(i) * spectrumScale;
-      strLoudestFrequency = fft.getAverageCenterFrequency(i);
+    float newAverage = fft.getAvg(i);
+    if (loudestAverage < newAverage) {
+      loudestAverage = newAverage;
       loudestFrequency = i;
     }
   }
+  
   if (loudestAverage > threshold) {
-    
     return loudestFrequency;
   } else {
     return -1;
