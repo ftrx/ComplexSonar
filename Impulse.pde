@@ -89,4 +89,3 @@ class Impulse {
     return .0;
   }
 }
-

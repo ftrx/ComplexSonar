@@ -3,32 +3,30 @@ import SimpleOpenNI.*;
 import ddf.minim.analysis.*;
 import ddf.minim.*;
 
+static final int IMPULSE_COOLDOWN_TIME = 500;
+static final int ROOM_RESOLUTION = 8; // lower = better
+static final boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
+static final boolean RUN_FULLSCREEN = true;
+static final float IMPULSE_THRESHOLD = 20.0;
+static final float MAX_Z_DEPTH = 7.0; // meters
+static final float BLUR_SHIFT = 0.08;
+static final float STANDARD_SHIFT = 0.06;
+static final float MAX_FREQUENCE_INDEX = 4;
+
 Minim minim;
 AudioInput input;
 FFT fft;
 SimpleOpenNI context;
 SimpleOculusRift oculus;
 
-int SIGNAL_COOLDOWN_TIME = 500;
-int ROOM_RESOLUTION = 8; // lower = better
-boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
-boolean RUN_FULLSCREEN = true;
-float IMPULSE_THRESHOLD = 20.0;
-
-float lastWaveTime = .0;
-boolean signalCooldown = true;
+float lastImpulseTime = .0;
+boolean impulseCooldown = true;
 
 PImage rgbImage;
 int[] depthMap;
 PVector[] realWorldDepthMap;
 
 PMatrix3D headOrientation;
-float maxZDepth = 7.0; // meters
-
-float frequenceIndex = 0;
-float blurShift = 0.08;
-float standardShift = 0.06;
-float maxFrequenceIndex = 4;
 
 void setup() {
   size(1280, 800, OPENGL);
@@ -51,7 +49,7 @@ void setup() {
   context.enableRGB();
   context.setDepthColorSyncEnabled(true);
 
-  minim = new Minim (this);
+  minim = new Minim(this);
   input = minim.getLineIn(Minim.STEREO, 512);
   fft = new FFT(input.bufferSize(), input.sampleRate());
 }
@@ -67,20 +65,22 @@ void draw() {
   // maxFrequenceIndex - getLoudestFrequence(IMPULSE_THRESHOLD);
   // println(loudestFrequence);
   
-  if (loudestFrequence >= 0 && signalCooldown) { 
+  if (loudestFrequence >= 0 && impulseCooldown) { 
     addNewImpulse(new PVector(0, 0, 0), 1.0, int(loudestFrequence));
-    lastWaveTime = millis();
-    signalCooldown = false;
+    lastImpulseTime = millis();
+    impulseCooldown = false;
   }
   
-  if (millis() - lastWaveTime >= SIGNAL_COOLDOWN_TIME) {
-    signalCooldown = true;
+  if (millis() - lastImpulseTime >= IMPULSE_COOLDOWN_TIME) {
+    impulseCooldown = true;
   }
 
   depthMap = context.depthMap();
   realWorldDepthMap = context.depthMapRealWorld();
 
   rgbImage = context.rgbImage();
+  
+  updateImpulses();
   
   oculus.draw();
 } 
@@ -90,8 +90,6 @@ void onDrawScene(int eye) {
   applyMatrix(headOrientation);
 
   strokeWeight((float)ROOM_RESOLUTION/2.0);
-
-  updateImpulses();
 
   int currentMapIndex;
   PVector currentPoint;
@@ -120,25 +118,25 @@ void onDrawScene(int eye) {
         }
 
         if (currentPointIntensity <= 0.1) {
-          currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, maxZDepth, 1.0, 0.1));
+          currentPointColor = color(r, g, b, 10.0 * map(currentPoint.z, .0, MAX_Z_DEPTH, 1.0, 0.1));
           stroke(currentPointColor);
           
           vertex(
-            currentPoint.x + random(-standardShift, standardShift),
-            currentPoint.y + random(-standardShift, standardShift),
-            currentPoint.z + random(-standardShift, standardShift)
+            currentPoint.x + random(-STANDARD_SHIFT, STANDARD_SHIFT),
+            currentPoint.y + random(-STANDARD_SHIFT, STANDARD_SHIFT),
+            currentPoint.z + random(-STANDARD_SHIFT, STANDARD_SHIFT)
           );
         } 
         else {
-          float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, maxZDepth, 1.0, 0.1);
+          float alphaValue = map(currentPointIntensity, 0, 1.0, 0, 255) * map(currentPoint.z, .0, MAX_Z_DEPTH, 1.0, 0.1);
           currentPointColor = color(r, g, b, alphaValue);
           stroke(currentPointColor);
 
           float currentPointFrequence = cumulatedImpulseFrequenceAtPosition(currentPoint); 
 
-          float maxFrequenceShift = currentPointFrequence / maxFrequenceIndex * blurShift;
+          float maxFrequenceShift = currentPointFrequence / MAX_FREQUENCE_INDEX * BLUR_SHIFT;
 
-          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, standardShift, maxFrequenceShift);
+          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, STANDARD_SHIFT, MAX_FREQUENCE_INDEX);
           intensityOffset = constrain(intensityOffset,0.0,1.0);
           vertex(
             currentPoint.x + random(-intensityOffset, intensityOffset),
