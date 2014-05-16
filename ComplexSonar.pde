@@ -11,7 +11,7 @@ SimpleOculusRift oculus;
 int SIGNAL_COOLDOWN_TIME = 500;
 int ROOM_RESOLUTION = 8; // lower = better
 boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
-boolean RUN_FULLSCREEN = false;
+boolean RUN_FULLSCREEN = true;
 
 float signalIntensity;
 float lastWaveTime = .0;
