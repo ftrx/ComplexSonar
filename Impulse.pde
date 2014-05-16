@@ -22,7 +22,7 @@ float cumulatedImpulseFrequenceAtPosition(PVector point) {
     if (impulse.intensityAtPosition(point) > 0)
     {
       cumulatedIntensity += impulse.intensityAtPosition(point);
-      cumulatedFrequence += impulse.intensityAtPosition(point) * impulse.frequenceIndex;
+      cumulatedFrequence += (impulse.intensityAtPosition(point) * impulse.frequenceIndex);
       numberOfWavesAtPoint ++;
     }
     
@@ -81,7 +81,7 @@ class Impulse {
       if (radius - distance < lengthWithMaxIntensity) {
         intensity = map(radius - distance, .0, lengthWithMaxIntensity, actualIntensity, 0.7);
       } else { 
-        intensity = map(radius - distance, lengthWithMaxIntensity, waveLength, 0.7, 0.1);
+        intensity = map(radius - distance, lengthWithMaxIntensity, waveLength, 0.7, 0.0);
       }
       return intensity;
     }
