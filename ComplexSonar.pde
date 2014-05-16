@@ -7,7 +7,7 @@ static final int IMPULSE_COOLDOWN_TIME = 500;
 static final int ROOM_RESOLUTION = 8; // lower = better
 static final boolean USE_COLOR_IMAGE = false; // does not work in completly dark environments
 static final boolean RUN_FULLSCREEN = true;
-static final float IMPULSE_THRESHOLD = 20.0;
+static final float IMPULSE_THRESHOLD = 30.0;
 static final float MAX_Z_DEPTH = 7.0; // meters
 static final float BLUR_SHIFT = 0.08;
 static final float STANDARD_SHIFT = 0.06;
@@ -136,7 +136,7 @@ void onDrawScene(int eye) {
 
           float maxFrequenceShift = currentPointFrequence / MAX_FREQUENCE_INDEX * BLUR_SHIFT;
 
-          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, STANDARD_SHIFT, MAX_FREQUENCE_INDEX);
+          float intensityOffset = map(currentPointIntensity, 0.0, 1.0, STANDARD_SHIFT, maxFrequenceShift);
           intensityOffset = constrain(intensityOffset,0.0,1.0);
           vertex(
             currentPoint.x + random(-intensityOffset, intensityOffset),
